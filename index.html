@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>🌍 Adivina la bandera · Flag, Language & Capital game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background: linear-gradient(145deg, #0b2b44 0%, #123b56 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 16px;
+        }
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 30px 24px;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.2);
+            width: 100%;
+            max-width: 750px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 24px;
+            color: white;
+        }
+        .title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, #f9d423, #fdaa33);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .lang-switch {
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.4);
+            padding: 6px;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .lang-btn {
+            padding: 8px 22px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            background: transparent;
+            color: rgba(255,255,255,0.7);
+        }
+        .lang-btn.active {
+            background: #ffb347;
+            color: #0b2b44;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .mode-selector {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0 28px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            flex: 1;
+            min-width: 110px;
+            padding: 14px 10px;
+            border: none;
+            border-radius: 60px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 0 rgba(0,0,0,0.2);
+        }
+        .mode-btn.active {
+            background: #ffb347;
+            color: #0f2f40;
+            border-color: #f0c45a;
+            transform: translateY(2px);
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+        .flag-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0 15px;
+            filter: drop-shadow(0 15px 15px rgba(0,0,0,0.5));
+        }
+        .flag-img {
+            width: 100%;
+            max-width: 380px;
+            border-radius: 28px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+            border: 3px solid rgba(255,255,255,0.7);
+            background: white;
+            aspect-ratio: 3/2;
+            object-fit: cover;
+        }
+        .country-name-display {
+            text-align: center;
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: #ffecb3;
+            background: rgba(0,0,0,0.5);
+            display: inline-block;
+            padding: 8px 22px;
+            border-radius: 60px;
+            margin-top: 16px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,215,0,0.6);
+            letter-spacing: 0.5px;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin: 24px 0 20px;
+        }
+        .option-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 60px;
+            padding: 16px 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #0b2b44;
+            cursor: pointer;
+            transition: 0.15s;
+            box-shadow: 0 7px 0 #a0a0a0, 0 5px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.9);
+        }
+        .option-btn:hover {
+            background: #f5e7c8;
+            transform: scale(0.98);
+        }
+        .option-btn.correct {
+            background: #8bc34a;
+            box-shadow: 0 4px 0 #558b2f;
+            color: white;
+            pointer-events: none;
+        }
+        .option-btn.wrong {
+            background: #ef5350;
+            box-shadow: 0 4px 0 #b71c1c;
+            color: white;
+            pointer-events: none;
+        }
+        .option-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .feedback {
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            min-height: 3rem;
+            margin: 10px 0 20px;
+            color: #ffd966;
+            text-shadow: 2px 2px 0 #1f3a4b;
+        }
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 18px 10px;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.1s;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 7px 0 rgba(0,0,0,0.3);
+        }
+        #retryBtn {
+            background: #ffb74d;
+            color: #1e3a5f;
+        }
+        #viewScoreBtn {
+            background: #64b5f6;
+            color: #0a2a3b;
+        }
+        .action-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+        }
+        .score-badge {
+            background: #2c3e50;
+            color: #f1c40f;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            display: inline-block;
+            margin-top: 10px;
+            border: 1px solid gold;
+        }
+        footer {
+            text-align: center;
+            color: rgba(255,255,255,0.5);
+            margin-top: 20px;
+        }
+        @media (max-width: 550px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .mode-btn { font-size: 0.9rem; min-width: 90px; padding: 12px 5px; }
+            .country-name-display { font-size: 1.3rem; padding: 5px 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <div class="header">
+        <div class="title">
+            <h1 id="mainTitle">🇺🇳 FLAG QUIZ</h1>
+        </div>
+        <div class="lang-switch">
+            <button class="lang-btn active" id="langEs" data-lang="es">ES</button>
+            <button class="lang-btn" id="langEn" data-lang="en">EN</button>
+        </div>
+    </div>
+
+    <div class="mode-selector">
+        <button class="mode-btn active" id="modeCountry" data-mode="country">🏳️ 🌍 PAÍS</button>
+        <button class="mode-btn" id="modeLanguage" data-mode="language">🗣️ IDIOMA</button>
+        <button class="mode-btn" id="modeCapital" data-mode="capital">🏙️ CAPITAL</button>
+    </div>
+
+    <div id="loading" class="loading">Cargando banderas... 🌍</div>
+    <div id="gamePlay" style="display: none;">
+        <div class="flag-area">
+            <img id="flagImage" class="flag-img" src="" alt="Bandera">
+            <div id="countryNameDisplay" class="country-name-display" style="display: none;"></div>
+        </div>
+        <div id="feedback" class="feedback">✨ ¡Elige una opción!</div>
+        <div id="optionsContainer" class="options-grid"></div>
+        
+        <div id="actionButtons" class="action-buttons" style="display: none;">
+            <button id="retryBtn" class="action-btn">🔄 Volver a intentar</button>
+            <button id="viewScoreBtn" class="action-btn">📊 Ver puntuación</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 15px;">
+            <span class="score-badge" id="scoreDisplay">0</span>
+        </div>
+    </div>
+    <footer id="footerText">🌐 datos: restcountries.com</footer>
+</div>
+
+<script>
+    (function() {
+        // ---------- CONFIG ----------
+        const COUNTRIES_API = 'https://restcountries.com/v3.1/all?fields=name,flags,languages,cca2,independent,capital';
+        let allCountries = [];            // Array de países procesados { nameEs, nameEn, flag, langCode, langEn, langEs, capital }
+        let currentCountry = null;
+        let currentOptions = [];
+        let currentMode = 'country';      // 'country', 'language', 'capital'
+        let currentLang = 'es';           // 'es' o 'en'
+        let score = 0;
+        let autoNextTimeout = null;
+
+        // Mapeo de idiomas inglés -> español
+        const languageSpanishMap = {
+            'Spanish': 'Español', 'English': 'Inglés', 'French': 'Francés', 'German': 'Alemán',
+            'Italian': 'Italiano', 'Portuguese': 'Portugués', 'Dutch': 'Neerlandés', 'Russian': 'Ruso',
+            'Arabic': 'Árabe', 'Chinese': 'Chino', 'Japanese': 'Japonés', 'Korean': 'Coreano',
+            'Turkish': 'Turco', 'Swedish': 'Sueco', 'Danish': 'Danés', 'Norwegian': 'Noruego',
+            'Finnish': 'Finlandés', 'Polish': 'Polaco', 'Czech': 'Checo', 'Slovak': 'Eslovaco',
+            'Hungarian': 'Húngaro', 'Greek': 'Griego', 'Bulgarian': 'Búlgaro', 'Romanian': 'Rumano',
+            'Thai': 'Tailandés', 'Vietnamese': 'Vietnamita', 'Hindi': 'Hindi', 'Bengali': 'Bengalí',
+            'Urdu': 'Urdu', 'Persian': 'Persa', 'Hebrew': 'Hebreo', 'Swahili': 'Suajili',
+            'Zulu': 'Zulú', 'Afrikaans': 'Afrikáans', 'Indonesian': 'Indonesio', 'Malay': 'Malayo',
+            'Tagalog': 'Tagalo', 'Serbian': 'Serbio', 'Croatian': 'Croata', 'Bosnian': 'Bosnio',
+            'Albanian': 'Albanés', 'Macedonian': 'Macedonio', 'Slovenian': 'Esloveno', 'Lithuanian': 'Lituano',
+            'Latvian': 'Letón', 'Estonian': 'Estonio', 'Maltese': 'Maltés', 'Icelandic': 'Islandés',
+            'Irish': 'Irlandés', 'Luxembourgish': 'Luxemburgués', 'Mongolian': 'Mongol', 'Nepali': 'Nepalí',
+            'Sinhala': 'Cingalés', 'Burmese': 'Birmano', 'Khmer': 'Jemer', 'Lao': 'Laosiano',
+            'Georgian': 'Georgiano', 'Armenian': 'Armenio', 'Azerbaijani': 'Azerbaiyano', 'Kazakh': 'Kazajo',
+            'Uzbek': 'Uzbeko', 'Turkmen': 'Turcomano', 'Kyrgyz': 'Kirguís', 'Tajik': 'Tayiko',
+            'Pashto': 'Pastún', 'Dari': 'Darí', 'Somali': 'Somalí', 'Amharic': 'Amárico',
+            'Oromo': 'Oromo', 'Tigrinya': 'Tigriña', 'Malagasy': 'Malgache', 'Sesotho': 'Sesotho',
+            'Tswana': 'Setsuana', 'Swati': 'Suazi', 'Tsonga': 'Tsonga', 'Venda': 'Venda',
+            'Ndebele': 'Ndbele', 'Xhosa': 'Xhosa', 'Shona': 'Shona', 'Chewa': 'Chewa',
+            'Kinyarwanda': 'Kinyarwanda', 'Kirundi': 'Kirundi', 'Romansh': 'Romanche'
+        };
+
+        // Elementos DOM
+        const loadingEl = document.getElementById('loading');
+        const gamePlayEl = document.getElementById('gamePlay');
+        const flagImg = document.getElementById('flagImage');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackEl = document.getElementById('feedback');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const modeCountryBtn = document.getElementById('modeCountry');
+        const modeLanguageBtn = document.getElementById('modeLanguage');
+        const modeCapitalBtn = document.getElementById('modeCapital');
+        const langEsBtn = document.getElementById('langEs');
+        const langEnBtn = document.getElementById('langEn');
+        const mainTitle = document.getElementById('mainTitle');
+        const footerText = document.getElementById('footerText');
+        const actionButtonsDiv = document.getElementById('actionButtons');
+        const retryBtn = document.getElementById('retryBtn');
+        const viewScoreBtn = document.getElementById('viewScoreBtn');
+        const countryNameDisplay = document.getElementById('countryNameDisplay');
+
+        // ---------- FUNCIONES AUXILIARES ----------
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function getCurrentName(country) {
+            return currentLang === 'es' ? country.nameEs : country.nameEn;
+        }
+
+        function getCurrentLanguageName(country) {
+            return currentLang === 'es' ? country.langEs : country.langEn;
+        }
+
+        function resetOptionsState() {
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.disabled = false;
+                btn.classList.remove('correct', 'wrong');
+            });
+        }
+
+        function hideActionButtonsAndTimeouts() {
+            actionButtonsDiv.style.display = 'none';
+            if (autoNextTimeout) {
+                clearTimeout(autoNextTimeout);
+                autoNextTimeout = null;
+            }
+        }
+
+        function resetForNewQuestion() {
+            hideActionButtonsAndTimeouts();
+            resetOptionsState();
+            feedbackEl.innerText = currentLang === 'es' ? '🤔 ¿Cuál es?' : '🤔 Which one?';
+        }
+
+        // Actualiza la visibilidad y texto del nombre del país según modo capital
+        function updateCountryNameVisibility() {
+            if (currentMode === 'capital' && currentCountry) {
+                countryNameDisplay.style.display = 'inline-block';
+                countryNameDisplay.innerText = getCurrentName(currentCountry);
+            } else {
+                countryNameDisplay.style.display = 'none';
+            }
+        }
+
+        // ---------- GENERAR OPCIONES POR MODO ----------
+        function generateCountryOptions() {
+            const correctName = getCurrentName(currentCountry);
+            let others = allCountries.filter(c => c !== currentCountry);
+            others = shuffleArray(others).slice(0, 3).map(c => getCurrentName(c));
+            let options = [correctName, ...others];
+            options = shuffleArray(options);
+            currentOptions = options;
+            renderOptions(options);
+        }
+
+        function generateLanguageOptions() {
+            const correctLang = getCurrentLanguageName(currentCountry);
+            const allLangs = allCountries.map(c => currentLang === 'es' ? c.langEs : c.langEn);
+            const uniqueLangs = [...new Set(allLangs)].filter(l => l && l !== correctLang);
+            let distractors = shuffleArray(uniqueLangs).slice(0, 3);
+            while (distractors.length < 3) distractors.push(currentLang === 'es' ? 'Inglés' : 'English');
+            let options = [correctLang, ...distractors];
+            options = shuffleArray(options);
+            currentOptions = options;
+            renderOptions(options);
+        }
+
+        function generateCapitalOptions() {
+            const correctCapital = currentCountry.capital;
+            if (!correctCapital) {
+                // fallback: si por algún error no hay capital, se recarga otro país
+                nextQuestion();
+                return;
+            }
+            // Obtener otras capitales diferentes (excluyendo la actual y distintas entre sí)
+            let otherCapitals = allCountries
+                .filter(c => c !== currentCountry && c.capital && c.capital !== correctCapital)
+                .map(c => c.capital);
+            otherCapitals = [...new Set(otherCapitals)]; // eliminar duplicados
+            let distractors = shuffleArray(otherCapitals).slice(0, 3);
+            while (distractors.length < 3) {
+                distractors.push(currentLang === 'es' ? 'Desconocida' : 'Unknown');
+            }
+            let options = [correctCapital, ...distractors];
+            options = shuffleArray(options);
+            currentOptions = options;
+            renderOptions(options);
+        }
+
+        function renderOptions(options) {
+            optionsContainer.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.addEventListener('click', () => checkAnswer(opt));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // ---------- LÓGICA DE RESPUESTA ----------
+        function checkAnswer(selected) {
+            if (autoNextTimeout) return;
+
+            let correct = '';
+            if (currentMode === 'country') {
+                correct = getCurrentName(currentCountry);
+            } else if (currentMode === 'language') {
+                correct = getCurrentLanguageName(currentCountry);
+            } else { // capital
+                correct = currentCountry.capital;
+            }
+
+            const isCorrect = (selected === correct);
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => { btn.disabled = true; });
+
+            if (isCorrect) {
+                buttons.forEach(btn => {
+                    if (btn.innerText === correct) btn.classList.add('correct');
+                });
+                score++;
+                scoreDisplay.innerText = score;
+                feedbackEl.innerText = currentLang === 'es' ? '✅ ¡Correcto!' : '✅ Correct!';
+                actionButtonsDiv.style.display = 'none';
+                autoNextTimeout = setTimeout(() => {
+                    nextQuestion();
+                }, 1000);
+            } else {
+                score = 0;
+                scoreDisplay.innerText = score;
+                buttons.forEach(btn => {
+                    if (btn.innerText === correct) btn.classList.add('correct');
+                    if (btn.innerText === selected) btn.classList.add('wrong');
+                });
+                feedbackEl.innerText = currentLang === 'es'
+                    ? `❌ Incorrecto. Era ${correct}`
+                    : `❌ Wrong. It was ${correct}`;
+                actionButtonsDiv.style.display = 'flex';
+                // No hay auto-siguiente
+            }
+        }
+
+        // ---------- SIGUIENTE PREGUNTA ----------
+        function nextQuestion() {
+            if (autoNextTimeout) {
+                clearTimeout(autoNextTimeout);
+                autoNextTimeout = null;
+            }
+            if (!allCountries.length) return;
+            const randomIndex = Math.floor(Math.random() * allCountries.length);
+            currentCountry = allCountries[randomIndex];
+            flagImg.src = currentCountry.flag;
+            flagImg.alt = `Bandera de ${getCurrentName(currentCountry)}`;
+
+            if (currentMode === 'country') {
+                generateCountryOptions();
+            } else if (currentMode === 'language') {
+                generateLanguageOptions();
+            } else { // capital mode
+                generateCapitalOptions();
+            }
+            resetForNewQuestion();
+            updateCountryNameVisibility();
+        }
+
+        // ---------- MANEJADORES DE BOTONES DE ACCIÓN ----------
+        retryBtn.addEventListener('click', () => {
+            nextQuestion();
+        });
+
+        viewScoreBtn.addEventListener('click', () => {
+            scoreDisplay.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // ---------- CAMBIO DE MODO ----------
+        function setActiveMode(mode) {
+            currentMode = mode;
+            modeCountryBtn.classList.remove('active');
+            modeLanguageBtn.classList.remove('active');
+            modeCapitalBtn.classList.remove('active');
+            if (mode === 'country') modeCountryBtn.classList.add('active');
+            else if (mode === 'language') modeLanguageBtn.classList.add('active');
+            else if (mode === 'capital') modeCapitalBtn.classList.add('active');
+            nextQuestion();
+        }
+
+        modeCountryBtn.addEventListener('click', () => setActiveMode('country'));
+        modeLanguageBtn.addEventListener('click', () => setActiveMode('language'));
+        modeCapitalBtn.addEventListener('click', () => setActiveMode('capital'));
+
+        // ---------- CAMBIO DE IDIOMA INTERFAZ ----------
+        function setUILanguage(lang) {
+            currentLang = lang;
+            if (lang === 'es') {
+                langEsBtn.classList.add('active');
+                langEnBtn.classList.remove('active');
+                mainTitle.innerText = '🇺🇳 BANDERAS MUNDIALES';
+                modeCountryBtn.innerText = '🏳️ 🌍 PAÍS';
+                modeLanguageBtn.innerText = '🗣️ IDIOMA';
+                modeCapitalBtn.innerText = '🏙️ CAPITAL';
+                footerText.innerText = '🌐 datos: restcountries.com';
+                retryBtn.innerText = '🔄 Volver a intentar';
+                viewScoreBtn.innerText = '📊 Ver puntuación';
+                feedbackEl.innerText = '🤔 ¿Cuál es?';
+            } else {
+                langEsBtn.classList.remove('active');
+                langEnBtn.classList.add('active');
+                mainTitle.innerText = '🇺🇳 WORLD FLAGS';
+                modeCountryBtn.innerText = '🏳️ 🌍 COUNTRY';
+                modeLanguageBtn.innerText = '🗣️ LANGUAGE';
+                modeCapitalBtn.innerText = '🏙️ CAPITAL';
+                footerText.innerText = '🌐 data: restcountries.com';
+                retryBtn.innerText = '🔄 Retry';
+                viewScoreBtn.innerText = '📊 View score';
+                feedbackEl.innerText = '🤔 Which one?';
+            }
+
+            // Regenerar opciones según modo actual con nuevo idioma (excepto capital que no necesita regenerar opciones pero actualizamos nombre)
+            if (currentCountry) {
+                if (currentMode === 'country') {
+                    generateCountryOptions();
+                } else if (currentMode === 'language') {
+                    generateLanguageOptions();
+                } else {
+                    // modo capital: solo refrescar el nombre del país mostrado, las opciones (capitales) no cambian con idioma
+                    if (countryNameDisplay) countryNameDisplay.innerText = getCurrentName(currentCountry);
+                }
+                resetForNewQuestion();   // limpia estado de botones y oculta actionButtons
+                updateCountryNameVisibility();
+            }
+        }
+
+        langEsBtn.addEventListener('click', () => setUILanguage('es'));
+        langEnBtn.addEventListener('click', () => setUILanguage('en'));
+
+        // ---------- CARGA DE PAÍSES DESDE API ----------
+        async function loadCountries() {
+            try {
+                const response = await fetch(COUNTRIES_API);
+                const data = await response.json();
+                const independent = data.filter(c => c.independent === true);
+                allCountries = independent.map(c => {
+                    const nameEn = c.name?.common || '';
+                    const nameEs = c.name?.nativeName?.spa?.common || c.name?.translations?.spa?.common || nameEn;
+                    const flagUrl = c.flags?.png || c.flags?.svg || '';
+                    const langs = c.languages ? Object.values(c.languages) : ['Unknown'];
+                    const mainLangEn = langs[0] || 'Unknown';
+                    const mainLangEs = languageSpanishMap[mainLangEn] || mainLangEn;
+                    let capital = c.capital?.[0] || '';
+                    if (!capital || capital === '') capital = 'Unknown';
+                    return {
+                        nameEs: nameEs,
+                        nameEn: nameEn,
+                        flag: flagUrl,
+                        langCode: mainLangEn,
+                        langEn: mainLangEn,
+                        langEs: mainLangEs,
+                        capital: capital
+                    };
+                }).filter(c => c.flag && c.nameEn); // filtro básico
+
+                // Añadir países especiales con capitales correctas
+                const existingNames = new Set(allCountries.map(c => c.nameEn));
+                const extras = [];
+                if (!existingNames.has('Palestine')) extras.push({ 
+                    nameEs: 'Palestina', nameEn: 'Palestine', flag: 'https://flagcdn.com/w320/ps.png', 
+                    langEn: 'Arabic', langEs: 'Árabe', capital: 'Ramallah' 
+                });
+                if (!existingNames.has('Vatican City')) extras.push({ 
+                    nameEs: 'Ciudad del Vaticano', nameEn: 'Vatican City', flag: 'https://flagcdn.com/w320/va.png', 
+                    langEn: 'Latin', langEs: 'Latín', capital: 'Vatican City' 
+                });
+                if (!existingNames.has('Kosovo')) extras.push({ 
+                    nameEs: 'Kosovo', nameEn: 'Kosovo', flag: 'https://flagcdn.com/w320/xk.png', 
+                    langEn: 'Albanian', langEs: 'Albanés', capital: 'Pristina' 
+                });
+                allCountries = [...allCountries, ...extras];
+
+                // Filtrar países que tengan capital válida (para que modo capital funcione sin errores)
+                // así todos los países disponibles tendrán capital real.
+                allCountries = allCountries.filter(c => c.capital && c.capital !== 'Unknown');
+                
+                if (allCountries.length === 0) throw new Error('No se encontraron países con capital');
+                
+                loadingEl.style.display = 'none';
+                gamePlayEl.style.display = 'block';
+                nextQuestion();
+            } catch (error) {
+                loadingEl.innerText = 'Error al cargar datos. Recarga la página.';
+                console.error(error);
+            }
+        }
+
+        loadCountries();
+    })();
+</script>
+</body>
+</html>
